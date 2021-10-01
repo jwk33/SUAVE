@@ -87,6 +87,10 @@ class Rotor(Energy_Component):
         self.inputs.y_axis_rotation    = 0.
         self.inputs.pitch_command      = 0.
         self.variable_pitch            = False
+        
+        self.UQ_parameters             = Data()
+        self.UQ_parameters.PSI         = None
+        self.UQ_parameters.lamda       = None
 
     def spin(self,conditions):
         """Analyzes a general rotor given geometry and operating conditions.
@@ -412,6 +416,38 @@ class Rotor(Energy_Component):
             if ii>10000:
                 print("Rotor BEMT did not converge to a solution (Iteration Limit)")
                 break
+            
+        # After BEMT converges, there is still some uncertainty in the inflow angle PSI:
+        if self.UQ_parameters.PSI is not None:
+            # update PSI for this simulation of uncertainty
+            PSI += self.UQ_parameters.PSI
+            
+            # compute resulting values
+            sin_psi      = np.sin(PSI)
+            cos_psi      = np.cos(PSI)
+            Wa           = 0.5*Ua + 0.5*U*sin_psi
+            Wt           = 0.5*Ut + 0.5*U*cos_psi
+            va           = Wa - Ua
+            vt           = Ut - Wt
+            alpha        = beta - np.arctan2(Wa,Wt)
+            W            = (Wa*Wa + Wt*Wt)**0.5
+            Ma           = W/a        # a is the speed of sound  
+            lamdaw       = r*Wa/(R*Wt)
+            
+            # Limiter to keep from Nan-ing
+            lamdaw[lamdaw<0.] = 0.
+            f            = (B/2.)*(1.-r/R)/lamdaw
+            f[f<0.]      = 0.
+            piece        = np.exp(-f)
+            arccos_piece = np.arccos(piece)
+            F            = 2.*arccos_piece/pi
+            Gamma        = vt*(4.*pi*r/B)*F*(1.+(4.*lamdaw*R/(pi*B*r))*(4.*lamdaw*R/(pi*B*r)))**0.5
+            Re           = (W*c)/nu
+            
+            # Compute aerodynamic forces based on specified input airfoil or surrogate
+            Cl, Cdval = compute_aerodynamic_forces(a_loc, a_geo, cl_sur, cd_sur, ctrl_pts, Nr, Na, Re, Ma, alpha, tc, use_2d_analysis)
+            
+            
             
         # correction for velocities, since tip loss correction is only applied to loads in prior BEMT iteration
         va = F*va
