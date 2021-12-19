@@ -59,7 +59,7 @@ class Cryo_Fuel_Tank(Energy_Component):
             self.tank_type = 'cylindrical'
         return
         
-    def calculate_structural(self):
+    def calculate_structural_thickness(self):
 
         #calculate minimum structural wall thickness
         if (self.tank_type == 'spherical'):
@@ -69,42 +69,40 @@ class Cryo_Fuel_Tank(Energy_Component):
             #cylindrical tank
             t_min = 0.5 * self.diameter_internal * ( ( 1 - sqrt(3) * self.design_pressure / self.structural_material.yield_tensile_strength)**(-0.5) - 1)
         #calculate actual structural wall thickness using safety factor
-        self.t_wall = self.safety_factor_wall * t_min
-        
+        self.thickness_structural = self.safety_factor_wall * t_min
+
         #calculate mass of stuctural tank
         if (self.tank_type == 'spherical'):
             #spherical tank
-            self.mass_properties.structural = self.structural_material.density * ( 4/3 * pi) * ( (0.5 * self.diameter_internal + self.t_wall)**3 - (0.5 * self.diameter_internal)**3)       #volume of thin-walled spherical shell 
+            self.mass_properties.structural = self.structural_material.density * ( 4/3 * pi) * ( (0.5 * self.diameter_internal + self.thickness_structural)**3 - (0.5 * self.diameter_internal)**3)       #volume of thin-walled spherical shell 
         else:
-            self.mass_properties.structural = self.structural_material.density * ( ( 4/3 * pi) * ( (0.5 * self.diameter_internal + self.t_wall)**3 - (0.5 * self.diameter_internal)**3) \
-                + pi * ((0.5 * self.diameter_internal + self.t_wall)**2 - (0.5 * self.diameter_internal)**2) * (self.length_internal - self.diameter_internal))        #volume of thin-walled spherical shell with thin walled cylinder in the middle
-
-
+            self.mass_properties.structural = self.structural_material.density * ( ( 4/3 * pi) * ( (0.5 * self.diameter_internal + self.thickness_structural)**3 - (0.5 * self.diameter_internal)**3) \
+                + pi * ((0.5 * self.diameter_internal + self.thickness_structural)**2 - (0.5 * self.diameter_internal)**2) * (self.length_internal - self.diameter_internal))        #volume of thin-walled spherical shell with thin walled cylinder in the middle
         return
 
-    def calculate_insulation(self):
+    def calculate_insulation_thickness(self):
         Q = self.design_boiloff_rate * self.fuel_type.enthalpy_vaporisation
         if (self.tank_type == 'spherical'):
             alpha = (4 * pi/Q) * (self.temperature_outer - self.fuel_type.temperatures.storage)
-            beta = (1 / self.structural_material.thermal_conductivity) * ( 1/(0.5 * self.diameter_internal) - 1/(0.5*self.diameter_internal + self.t_wall))
+            beta = (1 / self.structural_material.thermal_conductivity) * ( 1/(0.5 * self.diameter_internal) - 1/(0.5*self.diameter_internal + self.thickness_structural))
             gamma = alpha - beta
 
-            t_min = (0.5 *  self.diameter_internal + self.t_wall) *  (gamma * self.insulation_material.thermal_conductivity)/(1 - gamma*self.insulation_material.thermal_conductivity)
+            t_min = (0.5 *  self.diameter_internal + self.thickness_structural) *  (gamma * self.insulation_material.thermal_conductivity)/(1 - gamma*self.insulation_material.thermal_conductivity)
         
         else:
             alpha = (2 * pi * self.length_internal/Q) * (self.temperature_outer - self.fuel_type.temperatures.storage)
-            beta = (1 / self.structural_material.thermal_conductivity) * log((0.5*self.diameter_internal + self.t_wall)/ (0.5 * self.diameter_internal))
+            beta = (1 / self.structural_material.thermal_conductivity) * log((0.5*self.diameter_internal + self.thickness_structural)/ (0.5 * self.diameter_internal))
             gamma = alpha - beta
 
-            t_min = (0.5 *  self.diameter_internal + self.t_wall) *  ( exp(gamma * self.insulation_material.thermal_conductivity) -1)
+            t_min = (0.5 *  self.diameter_internal + self.thickness_structural) *  ( exp(gamma * self.insulation_material.thermal_conductivity) -1)
 
-        self.t_insulation = self.safety_factor_insulation * t_min
+        self.thickness_insulation = self.safety_factor_insulation * t_min
 
         if (self.tank_type == 'spherical'):
-            self.mass_properties.insulation = self.insulation_material.density * (4/3*pi) * ((0.5 * self.diameter_internal + self.t_wall + self.t_insulation)**3 - (0.5*self.diameter_internal + self.t_wall)**3)
+            self.mass_properties.insulation = self.insulation_material.density * (4/3*pi) * ((0.5 * self.diameter_internal + self.thickness_structural + self.thickness_insulation)**3 - (0.5*self.diameter_internal + self.thickness_structural)**3)
         else:
-            self.mass_properties.insulation = self.insulation_material.density * ( (4/3*pi) * ((0.5 * self.diameter_internal + self.t_wall + self.t_insulation)**3 - (0.5*self.diameter_internal + self.t_wall)**3) \
-                + pi* ((0.5 * self.diameter_internal + self.t_wall + self.t_insulation)**2 - (0.5* self.diameter_internal + self.t_wall)**2) * (self.length_internal - self.diameter_internal)) 
+            self.mass_properties.insulation = self.insulation_material.density * ( (4/3*pi) * ((0.5 * self.diameter_internal + self.thickness_structural + self.thickness_insulation)**3 - (0.5*self.diameter_internal + self.thickness_structural)**3) \
+                + pi* ((0.5 * self.diameter_internal + self.thickness_structural + self.thickness_insulation)**2 - (0.5* self.diameter_internal + self.thickness_structural)**2) * (self.length_internal - self.diameter_internal)) 
         return
 
     def calculate_fuel(self):
