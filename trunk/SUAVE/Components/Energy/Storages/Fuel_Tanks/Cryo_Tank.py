@@ -43,8 +43,10 @@ class Cryo_Fuel_Tank(Energy_Component):
 
     def calculate_all(self):
         self.tank_type()
-        self.calculate_structural()
-        self.calculate_insulation()
+        self.calculate_structural_thickness()
+        self.calculate_insulation_thickness()
+        self.calculate_structural_mass()
+        self.calculate_insulation_mass()
         self.calculate_fuel()
 
         self.mass_properties.empty_mass = self.mass_properties.structural + self.mass_properties.insulation
