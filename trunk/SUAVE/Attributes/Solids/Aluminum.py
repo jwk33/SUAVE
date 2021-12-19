@@ -64,3 +64,4 @@ class Aluminum(Solid):
         self.yield_bearing_strength     = 386e6 * Units.Pa
         self.minimum_gage_thickness     = 0.0   * Units.m
         self.density                    = 2700. * Units['kg/(m**3)']
+        self.thermal_conductivity       = 236.0 * Units['W/m K']
