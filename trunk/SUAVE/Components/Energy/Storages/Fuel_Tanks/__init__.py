@@ -5,3 +5,4 @@
 
 
 from .Fuel_Tank import Fuel_Tank
+from .Cryo_Tank import Cryo_Fuel_Tank
