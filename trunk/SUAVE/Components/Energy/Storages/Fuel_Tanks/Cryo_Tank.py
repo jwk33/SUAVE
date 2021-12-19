@@ -113,9 +113,9 @@ class Cryo_Fuel_Tank(Energy_Component):
 
     def calculate_fuel(self):
         if (self.tank_type == 'spherical'):
-            self.mass_properties.fuel_volume_when_full = 4/3 * pi * self.diameter_internal**3
+            self.mass_properties.fuel_volume_when_full = 1/6 * pi * self.diameter_internal**3
         else:
-            self.mass_properties.fuel_volume_when_full = (4/3 * pi * self.diameter_internal**3) + (0.25 * pi * self.diameter_internal * (self.length_internal - self.diameter_internal)) 
+            self.mass_properties.fuel_volume_when_full = (1/6 * pi * self.diameter_internal**3) + (0.25 * pi * self.diameter_internal**2 * (self.length_internal - self.diameter_internal)) 
 
         self.mass_properties.fuel_mass_when_full = self.mass_properties.fuel_volume_when_full * self.fuel_type.density
         return
