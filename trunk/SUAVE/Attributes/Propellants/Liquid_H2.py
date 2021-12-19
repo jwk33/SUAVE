@@ -50,5 +50,7 @@ class Liquid_H2(Propellant):
         self.density                    = 59.9                             # [kg/m^3] 
         self.specific_energy            = 141.86e6                         # [J/kg] 
         self.energy_density             = 8491.0e6                         # [J/m^3] 
+        self.enthalpy_vaporisation      = 446e3                            # [J/kg]
         self.stoichiometric_fuel_to_air = 0.0291 
-        self.temperatures.autoignition  = 845.15                           # [K]         
+        self.temperatures.autoignition  = 845.15                           # [K]
+        self.temperatures.storage       = 23.9                             # [K]         
