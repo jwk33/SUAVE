@@ -39,13 +39,13 @@ def main():
     # ----------------------------------------------------------------------    
 
     # General Aviation Aircraft   
-    GA_RPM_true              = [979.994579706428, 979.9945797784385,979.9945796984032]
-    GA_lift_coefficient_true = [0.5473140864833066,0.5473140864832907,0.5473140864830665]
+    GA_RPM_true              = [973.9534348587468,973.953434872128]
+    GA_lift_coefficient_true = [0.5474716962005756,0.5474716962005768]
     
 
     # EVTOL Aircraft      
-    EVTOL_RPM_true              = [2385.0695303620305,2385.069533209447,2385.069532423358 ]
-    EVTOL_lift_coefficient_true = [0.8074217543873324,0.8074217543763301,0.8074217543763312]
+    EVTOL_RPM_true              = [2385.0695323649907,2385.06953270966]
+    EVTOL_lift_coefficient_true = [0.8075122900985718,0.8075122900986484]
     
         
     for i in range(len(battery_chemistry)):
@@ -68,7 +68,8 @@ def main():
         plot_results(GA_results,line_style_new[i],line_style2_new[i])  
         
         # RPM of rotor check during hover
-        GA_RPM        = GA_results.segments.climb_1.conditions.propulsion.propeller_rpm[3][0]  
+        GA_RPM        = GA_results.segments.climb_1.conditions.propulsion.propeller_rpm[3][0] 
+        print('GA RPM: ' + str(GA_RPM))
         GA_diff_RPM   = np.abs(GA_RPM - GA_RPM_true[i])
         print('RPM difference')
         print(GA_diff_RPM)
@@ -76,10 +77,11 @@ def main():
         
         # lift Coefficient Check During Cruise
         GA_lift_coefficient        = GA_results.segments.cruise.conditions.aerodynamics.lift_coefficient[2][0] 
+        print('GA CL: ' + str(GA_lift_coefficient)) 
         GA_diff_CL                 = np.abs(GA_lift_coefficient  - GA_lift_coefficient_true[i]) 
         print('CL difference')
         print(GA_diff_CL)
-        assert np.abs((GA_lift_coefficient  - GA_lift_coefficient_true[i])/GA_lift_coefficient_true[i]) < 1e-3   
+        assert np.abs((GA_lift_coefficient  - GA_lift_coefficient_true[i])/GA_lift_coefficient_true[i]) < 1e-6
             
             
       
@@ -98,7 +100,8 @@ def main():
         plot_results(EVTOL_results,line_style_new[i],line_style2_new[i])  
         
         # RPM of rotor check during hover
-        EVTOL_RPM        = EVTOL_results.segments.climb_1.conditions.propulsion.lift_rotor_rpm[2][0]  
+        EVTOL_RPM        = EVTOL_results.segments.climb_1.conditions.propulsion.lift_rotor_rpm[2][0] 
+        print('EVTOL RPM: ' + str(EVTOL_RPM)) 
         EVTOL_diff_RPM   = np.abs(EVTOL_RPM - EVTOL_RPM_true[i])
         print('EVTOL_RPM difference')
         print(EVTOL_diff_RPM)
@@ -106,6 +109,7 @@ def main():
         
         # lift Coefficient Check During Cruise
         EVTOL_lift_coefficient        = EVTOL_results.segments.departure_terminal_procedures.conditions.aerodynamics.lift_coefficient[2][0] 
+        print('EVTOL CL: ' + str(EVTOL_lift_coefficient)) 
         EVTOL_diff_CL                 = np.abs(EVTOL_lift_coefficient  - EVTOL_lift_coefficient_true[i]) 
         print('CL difference')
         print(EVTOL_diff_CL)
@@ -350,24 +354,10 @@ def GA_mission_setup(analyses,vehicle):
     segment.climb_rate                                       = -200 * Units['ft/min']  
     segment.state.unknowns.throttle                          = 0.8 * ones_row(1)  
     segment = vehicle.networks.battery_propeller.add_unknowns_and_residuals_to_segment(segment,  initial_power_coefficient = 0.1)   
-
-    # ------------------------------------------------------------------
-    #  Charge Segment:  
-    # ------------------------------------------------------------------  
-    segment                          = Segments.Ground.Battery_Charge_Discharge(base_segment)  
-    segment.tag                      = 'charge'  
-    segment.analyses.extend(analyses.base)                 
-    segment.battery_discharge        = False 
-    segment                          = vehicle.networks.battery_propeller.add_unknowns_and_residuals_to_segment(segment)   
     
     # add to misison
-    mission.append_segment(segment)     
+    mission.append_segment(segment)
     
-    # ------------------------------------------------------------------
-    #   Mission definition complete    
-    # ------------------------------------------------------------------ 
-    
-
     # ------------------------------------------------------------------
     #  Charge Segment: 
     # ------------------------------------------------------------------     
@@ -378,7 +368,10 @@ def GA_mission_setup(analyses,vehicle):
     segment.battery_discharge                               = False      
     segment.increment_battery_cycle_day                     = True            
     segment = vehicle.networks.battery_propeller.add_unknowns_and_residuals_to_segment(segment)    
-    mission.append_segment(segment)       
+    
+    # add to misison
+    mission.append_segment(segment)        
+
     return mission
 
 
@@ -542,6 +535,8 @@ def EVTOL_mission_setup(analyses,vehicle):
     segment.battery_discharge                                = False    
     segment.increment_battery_cycle_day                      = True         
     segment = vehicle.networks.lift_cruise.add_lift_unknowns_and_residuals_to_segment(segment)    
+    
+    # add to misison
     mission.append_segment(segment)        
     
     return mission

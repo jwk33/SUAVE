@@ -93,6 +93,9 @@ def read_vsp_fuselage(fuselage_id,fux_idx,sym_flag, units_type='SI', fineness=Tr
         fuselage.tag = vsp.GetGeomName(fuselage_id) + '_' + str(fux_idx+1)
     else: 
         fuselage.tag = 'FuselageGeom' + '_' + str(fux_idx+1)	
+    
+    scaling           = vsp.GetParmVal(fuselage_id, 'Scale', 'XForm')  
+    units_factor      = units_factor*scaling
 
     fuselage.origin[0][0] = vsp.GetParmVal(fuselage_id, 'X_Location', 'XForm') * units_factor
     fuselage.origin[0][1] = vsp.GetParmVal(fuselage_id, 'Y_Location', 'XForm') * units_factor*sym_flag
@@ -116,7 +119,7 @@ def read_vsp_fuselage(fuselage_id,fux_idx,sym_flag, units_type='SI', fineness=Tr
     for ii in range(0, fuselage.vsp_data.xsec_num): 
         # Create the segment
         x_sec                     = vsp.GetXSec(fuselage.vsp_data.xsec_surf_id, ii) # VSP XSec ID.
-        segment                   = SUAVE.Components.Fuselages.Segment()
+        segment                   = SUAVE.Components.Lofted_Body_Segment.Segment()
         segment.vsp_data.xsec_id  = x_sec 
         segment.tag               = 'segment_' + str(ii)
 
@@ -154,9 +157,9 @@ def read_vsp_fuselage(fuselage_id,fux_idx,sym_flag, units_type='SI', fineness=Tr
     fuselage.heights.at_three_quarters_length   = get_fuselage_height(fuselage, .75) 
     fuselage.heights.at_wing_root_quarter_chord = get_fuselage_height(fuselage, .4) 
 
-    fuselage.heights.maximum    = max(heights) 		# Max segment height.	
-    fuselage.width		    = max(widths) 		# Max segment width.
-    fuselage.effective_diameter = max(eff_diams)		# Max segment effective diam.
+    fuselage.heights.maximum    = max(heights)          # Max segment height.	
+    fuselage.width              = max(widths)           # Max segment width.
+    fuselage.effective_diameter = max(eff_diams)        # Max segment effective diam.
 
     fuselage.areas.front_projected  = np.pi*((fuselage.effective_diameter)/2)**2
 
@@ -508,7 +511,7 @@ def compute_fuselage_fineness(fuselage, x_locs, eff_diams, eff_diam_gradients_fw
     x_locs_tail		    = x_locs>=0.5						# Searches aft 50% of fuselage.
     eff_diam_gradients_fwd_tail = eff_diam_gradients_fwd[x_locs_tail[1:]]			# Smaller array of tail gradients.
     min_val 		    = np.min(-eff_diam_gradients_fwd_tail)			# Computes min gradient, where fuselage tapers (minus sign makes positive).
-    x_loc = x_locs[np.hstack([False,-eff_diam_gradients_fwd==min_val])][-1]			# Saves aft-most value (useful for straight fuselage with multiple zero gradients.) 
+    x_loc = x_locs[np.hstack([False,-eff_diam_gradients_fwd==min_val])][-1]			# Saves aft-most value (useful for straight fuselage with multiple zero gradients.)
     fuselage.lengths.tail       = (1.-x_loc)*fuselage.lengths.total
     fuselage.fineness.tail      = fuselage.lengths.tail/(eff_diams[x_locs==x_loc][0])	# Minus sign converts tail fineness to positive value.
 
