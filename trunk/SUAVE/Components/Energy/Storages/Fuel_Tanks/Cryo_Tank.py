@@ -70,7 +70,9 @@ class Cryo_Fuel_Tank(Energy_Component):
             t_min = 0.5 * self.diameter_internal * ( ( 1 - sqrt(3) * self.design_pressure / self.structural_material.yield_tensile_strength)**(-0.5) - 1)
         #calculate actual structural wall thickness using safety factor
         self.thickness_structural = self.safety_factor_wall * t_min
+        return
 
+    def calculate_structural_mass(self):
         #calculate mass of stuctural tank
         if (self.tank_type == 'spherical'):
             #spherical tank
@@ -97,7 +99,9 @@ class Cryo_Fuel_Tank(Energy_Component):
             t_min = (0.5 *  self.diameter_internal + self.thickness_structural) *  ( exp(gamma * self.insulation_material.thermal_conductivity) -1)
 
         self.thickness_insulation = self.safety_factor_insulation * t_min
+        return
 
+    def calculate_insulation_mass(self):
         if (self.tank_type == 'spherical'):
             self.mass_properties.insulation = self.insulation_material.density * (4/3*pi) * ((0.5 * self.diameter_internal + self.thickness_structural + self.thickness_insulation)**3 - (0.5*self.diameter_internal + self.thickness_structural)**3)
         else:
