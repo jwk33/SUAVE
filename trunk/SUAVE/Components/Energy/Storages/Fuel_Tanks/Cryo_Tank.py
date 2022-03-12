@@ -27,11 +27,16 @@ class Cryo_Fuel_Tank(Energy_Component):
     used to indicate its fuel type.
     """
     def __defaults__(self):
-        #self.mass_properties.empty_mass            = 0.0
-        #self.mass_properties.fuel_mass_when_full   = 0.0
-        #self.mass_properties.fuel_volume_when_full = 0.0
+        self.mass_properties.empty_mass            = 0.0
+        self.mass_properties.fuel_mass_when_full   = 0.0
+        self.mass_properties.fuel_volume_when_full = 0.0
+        self.gravimetric_efficiency                = 0.0
+        self.tank_type                             = None
         self.diameter_internal                     = 0.0    #[m]
+        self.diameter_external                     = 0.0    #[m]
+        self.diameter_external_max                 = 0.0    #[m]
         self.length_internal                       = 0.0    #[m]
+        self.length_external                       = 0.0    #[m]
         self.design_pressure                       = 0.0    #[Pa]
         self.design_boiloff_rate                   = 0.0    #[kg/s]
         self.temperature_outer                     = 0.0    #[K]
@@ -40,25 +45,32 @@ class Cryo_Fuel_Tank(Energy_Component):
         self.fuel_type                             = None   # Propellant Class
         self.structural_material                   = None   # Solid Material Class
         self.insulation_material                   = None   # Solid Material Class
+        self.structural_thickness_min              = 7.0*1e-3
 
     def calculate_all(self):
-        self.tank_type()
+        if self.tank_type == 'spherical': self.diameter_internal = self.length_internal
+        if self.diameter_internal == 0.0: self.calculate_internal_diam()
+        self.calculate_tank_type()
         self.calculate_structural_thickness()
         self.calculate_insulation_thickness()
         self.calculate_structural_mass()
         self.calculate_insulation_mass()
         self.calculate_fuel()
 
-        self.mass_properties.empty_mass = self.mass_properties.structural + self.mass_properties.insulation
-        print("calculated all properties")
+        self.mass_properties.empty_mass     = self.mass_properties.structural + self.mass_properties.insulation
+        self.length_external                = self.length_internal + 2 * ( self.thickness_structural + self.thickness_insulation)
+        self.diameter_external              = self.diameter_internal + 2 * ( self.thickness_structural + self.thickness_insulation)
+        self.gravimetric_efficiency         = self.mass_properties.fuel_mass_when_full/(self.mass_properties.empty_mass+ self.mass_properties.fuel_mass_when_full)
+        #print("Gravimetric Efficiency: " + str(self.mass_properties.fuel_mass_when_full/(self.mass_properties.empty_mass+ self.mass_properties.fuel_mass_when_full)))
         return
 
 
-    def tank_type(self):
+    def calculate_tank_type(self):
         if (self.diameter_internal == self.length_internal):
             self.tank_type = 'spherical'
         else:
             self.tank_type = 'cylindrical'
+
         return
         
     def calculate_structural_thickness(self):
@@ -72,6 +84,7 @@ class Cryo_Fuel_Tank(Energy_Component):
             t_min = 0.5 * self.diameter_internal * ( ( 1 - sqrt(3) * self.design_pressure / self.structural_material.yield_tensile_strength)**(-0.5) - 1)
         #calculate actual structural wall thickness using safety factor
         self.thickness_structural = self.safety_factor_wall * t_min
+        if self.thickness_structural < self.structural_thickness_min: self.thickness_structural = self.structural_thickness_min
         return
 
     def calculate_structural_mass(self):
@@ -120,6 +133,12 @@ class Cryo_Fuel_Tank(Energy_Component):
         self.mass_properties.fuel_mass_when_full = self.mass_properties.fuel_volume_when_full * self.fuel_type.density
         return
 
+    def calculate_internal_diam(self):
+        self.diameter_internal = self.diameter_external
+        self.calculate_all()
+        while self.diameter_external > self.diameter_external_max:
+            self.diameter_internal *= 0.999
+            self.calculate_all()
 
 
 

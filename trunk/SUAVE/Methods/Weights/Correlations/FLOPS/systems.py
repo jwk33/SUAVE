@@ -76,10 +76,10 @@ def systems_FLOPS(vehicle):
     XL          = vehicle.fuselages['fuselage'].lengths.total / Units.ft
     WF          = vehicle.fuselages['fuselage'].width / Units.ft
     FPAREA      = XL * WF
-    NPASS       = vehicle.passengers
+    NPASS       = vehicle.design_passengers
     WAPU        = 54 * FPAREA ** 0.3 + 5.4 * NPASS ** 0.9  # apu weight
 
-    if vehicle.passengers >= 150:
+    if vehicle.design_passengers >= 150:
         NFLCR = 3  # number of flight crew
     else:
         NFLCR = 2

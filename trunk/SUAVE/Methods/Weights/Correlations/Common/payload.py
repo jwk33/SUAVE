@@ -52,12 +52,14 @@ def payload(vehicle, wt_passenger=195 * Units.lbs, wt_baggage=30 * Units.lbs):
     wt_pax      = wt_passenger * num_pax
     wt_bag      = wt_baggage * num_pax
     wt_payload  = wt_pax + wt_bag + vehicle.mass_properties.cargo
+    wt_payload_max = (vehicle.design_passengers ) * (wt_passenger + wt_baggage) + vehicle.mass_properties.cargo
+    #TODO: include max cargo mass
 
     # packup outputs
     output              = Data()
     output.total        = wt_payload
+    output.max_total    = wt_payload_max
     output.passengers   = wt_pax
     output.baggage      = wt_bag
     output.cargo        = vehicle.mass_properties.cargo
-
     return output

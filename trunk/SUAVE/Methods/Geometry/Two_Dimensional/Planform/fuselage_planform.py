@@ -14,7 +14,7 @@
 # ----------------------------------------------------------------------
 #  Imports
 # ----------------------------------------------------------------------
-
+from SUAVE.Components.Energy.Storages.Fuel_Tanks import Cryo_Fuel_Tank
 import numpy as np
 
 # ----------------------------------------------------------------------
@@ -75,6 +75,11 @@ def fuselage_planform(fuselage):
         tail_length     = tail_fineness * fuselage_width
         cabin_length    = number_seats * seat_pitch / seats_abreast + \
                        forward_extra + aft_extra
+        
+        for key in fuselage.Fuel_Tanks:
+            if isinstance(key, Cryo_Fuel_Tank):
+                cabin_length += key.length_external
+
         fuselage_length = cabin_length + nose_length + tail_length
     else:
         fuselage_length = fuselage.lengths.total

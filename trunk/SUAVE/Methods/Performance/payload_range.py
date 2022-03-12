@@ -54,7 +54,7 @@ def payload_range(vehicle,mission,cruise_segment_tag,reserves=0.):
 
     # Flags for printing results in command line, write output file, and plot
     iprint = 1      # Flag for print output data in the prompt line
-    iwrite = 1      # Flag for write an output file
+    iwrite = 2      # Flag for write an output file
     iplot  = 1      # Flag for plot payload range diagram
     ### could be an user input.
     ##      output_type: 1: Print only              (light)
@@ -67,6 +67,7 @@ def payload_range(vehicle,mission,cruise_segment_tag,reserves=0.):
         print("Error calculating Payload Range Diagram: Vehicle Operating Empty not defined")
         return True
     else:
+       
         OEW = masses.operating_empty
 
     if not masses.max_zero_fuel:
@@ -81,25 +82,29 @@ def payload_range(vehicle,mission,cruise_segment_tag,reserves=0.):
     else:
         MTOW = vehicle.mass_properties.max_takeoff
 
+        if (MZFW + masses.max_fuel < MTOW):     #condition if MTOW is defined to be greater than the operating point where plane is max payload and max fuel
+            MTOW = MZFW + masses.max_fuel
+    
     if not masses.max_payload:
         MaxPLD = MZFW - OEW  # If payload max not defined, calculate based in design weights
     else:
         MaxPLD = vehicle.mass_properties.max_payload
+        print(MaxPLD, MZFW-OEW)
+        print(MZFW, OEW)
         MaxPLD = min(MaxPLD , MZFW - OEW) #limit in structural capability
-
+    
     if not masses.max_fuel:
         MaxFuel = MTOW - OEW # If not defined, calculate based in design weights
     else:
         MaxFuel = vehicle.mass_properties.max_fuel  # If max fuel capacity not defined
         MaxFuel = min(MaxFuel, MTOW - OEW)
 
-
     # Define payload range points
     #Point  = [ RANGE WITH MAX. PLD   , RANGE WITH MAX. FUEL , FERRY RANGE   ]
     TOW     = [ MTOW                               , MTOW                   , OEW + MaxFuel ]
     FUEL    = [ min(TOW[1] - OEW - MaxPLD,MaxFuel) , MaxFuel                , MaxFuel       ]
-    PLD     = [ MaxPLD                             , MTOW - MaxFuel - OEW   , 0.            ]
-
+    PLD     = [ MaxPLD                             , min(MaxPLD, MTOW - MaxFuel - OEW)   , 0.            ]
+    print(PLD)
     # allocating Range array
     R       = [0,0,0]
 

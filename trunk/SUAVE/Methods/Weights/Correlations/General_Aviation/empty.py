@@ -168,7 +168,7 @@ def empty(vehicle):
     S_gross_w   = vehicle.reference_area
     Nult        = vehicle.envelope.ultimate_load 
     TOW         = vehicle.mass_properties.max_takeoff 
-    num_pax     = vehicle.passengers
+    num_pax     = vehicle.design_passengers
     wt_cargo    = vehicle.mass_properties.cargo
 
     q_c         = vehicle.design_dynamic_pressure

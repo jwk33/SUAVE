@@ -54,7 +54,7 @@ def systems(vehicle):
     
     Wings = SUAVE.Components.Wings
     
-    num_seats   = vehicle.passengers
+    num_seats   = vehicle.design_passengers
     ctrl_type   = vehicle.systems.control
     ac_type     = vehicle.systems.accessories
     S_gross_w   = vehicle.reference_area

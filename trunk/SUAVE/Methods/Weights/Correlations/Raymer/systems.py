@@ -63,14 +63,14 @@ def systems_Raymer(vehicle):
     DG             = vehicle.mass_properties.max_takeoff / Units.lbs
     Scs            = vehicle.wings['main_wing'].flap_ratio * vehicle.reference_area / Units.ft**2
     design_mach    = vehicle.design_mach_number
-    num_pax        = vehicle.passengers
+    num_pax        = vehicle.design_passengers
     network_name   = list(vehicle.networks.keys())[0]
     networks       = vehicle.networks[network_name]    
     fuse_w         = vehicle.fuselages['fuselage'].width / Units.ft
     fuse_h         = vehicle.fuselages['fuselage'].heights.maximum / Units.ft   
     cargo_weight   = vehicle.payload.cargo.mass_properties.mass / Units.lbs
     
-    if vehicle.passengers >= 150:
+    if vehicle.design_passengers >= 150:
         flight_crew = 3 # number of flight crew
     else:
         flight_crew = 2

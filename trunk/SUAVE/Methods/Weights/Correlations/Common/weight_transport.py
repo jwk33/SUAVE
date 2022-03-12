@@ -9,6 +9,7 @@
 # ----------------------------------------------------------------------
 import SUAVE
 import numpy as np
+from SUAVE.Components.Energy.Storages.Fuel_Tanks.Cryo_Tank import Cryo_Fuel_Tank
 from SUAVE.Core import Data
 from SUAVE.Methods.Weights.Correlations import Propulsion as Propulsion
 from SUAVE.Methods.Weights.Correlations.FLOPS.prop_system import total_prop_flops
@@ -126,11 +127,9 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
 
         Properties Used:
             N/A
-    """
-    
+    """ 
     Wings = SUAVE.Components.Wings
     Nets  = SUAVE.Components.Energy.Networks    
-    
     if method_type == 'FLOPS Simple' or method_type == 'FLOPS Complex':
         if not hasattr(vehicle, 'design_mach_number'):
             raise ValueError("FLOPS requires a design mach number for sizing!")
@@ -200,6 +199,8 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
             prop.mass_properties.mass = wt_prop
             wt_prop_total += wt_prop
 
+
+
     # Payload Weight
     if method_type == 'FLOPS Simple' or method_type == 'FLOPS Complex':
         payload = payload_FLOPS(vehicle)
@@ -213,6 +214,7 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
     vehicle.payload.passengers.mass_properties.mass = payload.passengers
     vehicle.payload.baggage.mass_properties.mass    = payload.baggage
     vehicle.payload.cargo.mass_properties.mass      = payload.cargo
+    vehicle.mass_properties.max_payload             = payload.max_total
     
     # Operating Items Weight
     if method_type == 'FLOPS Simple' or method_type == 'FLOPS Complex':
@@ -323,6 +325,18 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
     else:
         landing_gear = landing_gear_weight(vehicle)
 
+    #calculate fuselage tank weight
+    for key in vehicle.fuselages.fuselage.Fuel_Tanks:
+        if isinstance(key, Cryo_Fuel_Tank):
+            wt_prop_data = Data()
+            wt_prop_data.fuel_system = key.mass_properties.empty_mass
+            wt_prop_data.nacelle = 0.
+            wt_prop_data.wt_eng = wt_prop   #for sake of simplicity, engine weight here is the total of propulsion w/o tank weight
+            wt_prop_data.wt_thrust_reverser = 0.
+            wt_prop_data.wt_engine_controls = 0.
+            wt_prop_data.wt_starter = 0.
+            wt_prop_total += wt_prop_data.fuel_system
+
     # Distribute all weight in the output fields
     output                                  = Data()
     output.structures                       = Data()
@@ -380,7 +394,9 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
     output.empty                = output.structures.total + output.propulsion_breakdown.total + output.systems_breakdown.total
     output.operating_empty      = output.empty + output.operational_items.total
     output.zero_fuel_weight     = output.operating_empty + output.payload_breakdown.total
-    output.fuel                 = vehicle.mass_properties.max_takeoff - output.zero_fuel_weight
+    output.fuel                 = vehicle.mass_properties.fuel      #vehicle.mass_properties.max_takeoff - output.zero_fuel_weight
+    output.max_fuel             = vehicle.mass_properties.max_fuel
+    if output.fuel > vehicle.mass_properties.max_fuel: output.fuel = vehicle.mass_properties.max_fuel
     output.max_takeoff          = vehicle.mass_properties.max_takeoff
 
     control_systems         = SUAVE.Components.Physical_Component()
@@ -421,5 +437,9 @@ def empty_weight(vehicle, settings=None, method_type='New SUAVE'):
     vehicle.systems.apu                     = apu
     vehicle.systems.hydraulics              = hydraulics
     vehicle.systems.optionals               = optionals   
+
+    # update takeoff weight
+    #output.takeoff = output.operating_empty + output.payload_breakdown.total + output.fuel
+    #print(output.takeoff)
 
     return output

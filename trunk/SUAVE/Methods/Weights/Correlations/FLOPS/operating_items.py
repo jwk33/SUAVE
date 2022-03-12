@@ -74,28 +74,28 @@ def operating_items_FLOPS(vehicle):
     WOIL            = 0.082 * NENG * THRUST ** 0.65  # engine oil weight
     if hasattr(vehicle.fuselages['fuselage'], 'number_coach_seats'):
         NPT = vehicle.fuselages['fuselage'].number_coach_seats  # number of economy passengers
-        NPF = (vehicle.passengers - NPT) / 4.  # number of first clss passengers
-        NPB = vehicle.passengers - NPF - NPT  # number of bussines passengers
+        NPF = (vehicle.design_passengers - NPT) / 4.  # number of first clss passengers
+        NPB = vehicle.design_passengers - NPF - NPT  # number of bussines passengers
     else:
-        NPF = vehicle.passengers / 20.
-        NPB = vehicle.passengers / 10.
-        NPT = vehicle.passengers - NPF - NPB
+        NPF = vehicle.design_passengers / 20.
+        NPB = vehicle.design_passengers / 10.
+        NPT = vehicle.design_passengers - NPF - NPB
     vehicle.NPF = NPF
     vehicle.NPB = NPB
     vehicle.NPT = NPT
     WSRV        = (5.164 * NPF + 3.846 * NPB + 2.529 * NPT) * (DESRNG / VMAX) ** 0.255  # passenger service weight
     WCON        = 175 * np.ceil(vehicle.mass_properties.cargo / Units.lbs * 1. / 950)  # cargo container weight
 
-    if vehicle.passengers >= 150:
+    if vehicle._design_passengers >= 150:
         NFLCR = 3  # number of flight crew
-        NGALC = 1 + np.floor(vehicle.passengers / 250.)  # number of galley crew
+        NGALC = 1 + np.floor(vehicle.design_passengers / 250.)  # number of galley crew
     else:
         NFLCR = 2
         NGALC = 0
-    if vehicle.passengers < 51:
+    if vehicle.design_passengers < 51:
         NFLA = 1  # number of flight attendants, NSTU in FLOPS
     else:
-        NFLA = 1 + np.floor(vehicle.passengers / 40.)
+        NFLA = 1 + np.floor(vehicle.design_passengers / 40.)
 
     WFLAAB = NFLA * 155 + NGALC * 200  # flight attendant weight, WSTUAB in FLOPS
     WFLCRB = NFLCR * 225  # flight crew and baggage weight

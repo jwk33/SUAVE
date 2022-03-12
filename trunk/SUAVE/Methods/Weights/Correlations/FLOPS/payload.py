@@ -10,7 +10,7 @@
 from SUAVE.Core import Units, Data
 
 ## @ingroup Methods-Weights-Correlations-FLOPS
-def payload_FLOPS(vehicle, weight_per_passenger = 165. * Units.lb):
+def payload_FLOPS(vehicle, weight_per_passenger = 195. * Units.lb):
     """ Calculate the payload weight, including:
         - passenger and carry-on weight
         - baggage weight
@@ -49,6 +49,8 @@ def payload_FLOPS(vehicle, weight_per_passenger = 165. * Units.lb):
         BPP = 44 * Units.lbs
     WPBAG       = BPP * vehicle.passengers  # baggage weight
     WPAYLOAD    = WPASS + WPBAG + vehicle.mass_properties.cargo / Units.lbs  # payload weight
+    WPAYLOAD_MAX = (vehicle.design_passengers) * (WPPASS + BPP) + vehicle.mass_properties.cargo / Units.lbs #max payload weight
+    #TODO: max cargo payload weight instead of variable cargo weight
 
     output              = Data()
     output.total        = WPAYLOAD
