@@ -19,7 +19,7 @@ from SUAVE.Methods.Geometry.Two_Dimensional.Planform import wing_planform, wing_
 import numpy as np
 import string
 try:
-    import vsp as vsp
+    import openvsp as vsp
 except ImportError:
     try:
         import openvsp as vsp

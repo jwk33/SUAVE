@@ -15,7 +15,7 @@ import string
 from SUAVE.Methods.Geometry.Two_Dimensional.Cross_Section.Airfoil.import_airfoil_geometry\
      import import_airfoil_geometry
 try:
-    import vsp as vsp
+    import openvsp as vsp
 except ImportError:
     try:
         import openvsp as vsp

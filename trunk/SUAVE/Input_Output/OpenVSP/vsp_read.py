@@ -25,7 +25,7 @@ from SUAVE.Components.Energy.Networks.Battery_Propeller        import Battery_Pr
 
 from SUAVE.Core import Units, Data, Container
 try:
-    import vsp as vsp
+    import openvsp as vsp
 except ImportError:
     try:
         import openvsp as vsp

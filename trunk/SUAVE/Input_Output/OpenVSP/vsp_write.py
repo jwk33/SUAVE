@@ -25,7 +25,7 @@ from SUAVE.Input_Output.OpenVSP.vsp_fuselage  import write_vsp_fuselage
 from SUAVE.Input_Output.OpenVSP.vsp_wing      import write_vsp_wing
 from SUAVE.Input_Output.OpenVSP.vsp_nacelle   import write_vsp_nacelle 
 try:
-    import vsp as vsp
+    import openvsp as vsp
 except ImportError:
     try:
         import openvsp as vsp
